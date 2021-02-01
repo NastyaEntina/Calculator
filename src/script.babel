@@ -1,0 +1,155 @@
+let operRegex = /[*/+-]+/
+
+let buildTree = str => {
+  if (/^-?[0-9.]+$/.test(str)) return str
+  let match = str.match(/\d[-+]/g) 
+  if (!match) match = str.match(/\d[*/]/g)
+  let ind = str.lastIndexOf(match.pop()) + 1
+  return {
+    do: str[ind],
+    a: buildTree(str.slice(0, ind)),
+    b: buildTree(str.slice(ind+1))
+  }
+}
+
+let calc = {
+  '+': (x, y) => x + y,
+  '-': (x, y) => x - y,
+  '*': (x, y) => x * y,
+  '/': (x, y) => x / y
+};
+
+let calcTree = tree => {
+  if (typeof tree == 'string') return tree
+  let res = calc[tree.do](Number(calcTree(tree.a)), Number(calcTree(tree.b)))
+  return res
+}
+
+class Calculator extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      formula: '',
+      current: '',
+    } 
+    this.clear = this.clear.bind(this)
+    this.setDot = this.setDot.bind(this)
+    this.setMinus = this.setMinus.bind(this)
+    this.calculate = this.calculate.bind(this)
+    //this.addToCurrent = this.addToCurrent.bind(this)
+  }
+  addToCurrent(value) {
+    this.setState(prevState => ({
+          current: prevState.current + value       
+    }))
+  }
+
+  clear() {
+   this.setState({
+     formula: '',
+     current: '',
+     lastFormula: ''
+   })
+  } 
+  setDigit(value) {
+    if (this.state.lastFormula && this.state.formula == '') {
+      this.setState({
+        lastFormula: '',
+        current: value.toString()      
+      })
+    } else {
+      if (!(this.state.current == 0 && value == 0)) {    
+        if (operRegex.test(this.state.current)) {
+          this.setState(prevState => ({
+            formula: prevState.formula + prevState.current,
+            current: value.toString()      
+          }))
+        } else { this.addToCurrent(value) }
+      }   
+    }    
+  } 
+  setDot() {
+    if (this.state.lastFormula && this.state.formula == '') {
+      this.setState({
+         lastFormula: '',
+         current: '0.'     
+       })
+    } else {
+       if (!this.state.current.includes('.')) {
+        if (operRegex.test(this.state.current) || this.state.current == '') {
+          this.setState(prevState => ({
+           formula: prevState.formula + prevState.current,
+           current: '0.'       
+         }))
+        } else { this.addToCurrent('.') } 
+      } 
+    }      
+  } 
+  setOperation(value) {
+    if (this.state.current != '') {      
+      if (!operRegex.test(this.state.current)) {
+        this.setState(prevState => ({
+          formula: prevState.formula + prevState.current,
+          current: value  
+        }))
+      } else {
+        this.setState({
+        current: value
+      })
+      }      
+    }    
+  }
+  setMinus() {
+   if (operRegex.test(this.state.current)) {
+     if (this.state.current.length == 1) this.addToCurrent('-')
+   } else {
+      this.setState(prevState => ({
+         formula: prevState.formula + prevState.current,
+         current: '-'    
+      }))
+    }
+  }
+   
+  calculate() {
+     let curForm = this.state.formula
+     if (!operRegex.test(this.state.current)) curForm += this.state.current 
+    debugger
+     let tree = buildTree(curForm)
+     let result = calcTree(tree)
+     this.setState({
+       formula: '',
+       lastFormula: curForm + '=',
+       current: result,
+     })
+  } 
+
+  render() {
+    return (      
+    <div id="calculator" class="container">
+        <div id="show">
+          <div id="formula">{this.state.formula || this.state.lastFormula}{this.state.current}</div>
+          <div id="display">{this.state.current || 0}</div>
+        </div>
+        <button id="clear" onClick={this.clear}>AC</button>
+        <button id="divide" onClick={e => this.setOperation('/')}>/</button>
+        <button id="multiply" onClick={e => this.setOperation('*')}>X</button>
+        <button id="seven" onClick={e => this.setDigit(7)}>7</button>
+        <button id="eight" onClick={e => this.setDigit(8)}>8</button>
+        <button id="nine" onClick={e => this.setDigit(9)}>9</button>
+        <button id="subtract" onClick={this.setMinus}>-</button>
+        <button id="four" onClick={e => this.setDigit(4)}>4</button>
+        <button id="five" onClick={e => this.setDigit(5)}>5</button>
+        <button id="six" onClick={e => this.setDigit(6)}>6</button>
+        <button id="add" onClick={e => this.setOperation('+')}>+</button>
+        <button id="one" onClick={e => this.setDigit(1)}>1</button>
+        <button id="two" onClick={e => this.setDigit(2)}>2</button>
+        <button id="three" onClick={e => this.setDigit(3)}>3</button>
+        <button id="zero" onClick={e => this.setDigit(0)}>0</button>
+        <button id="decimal" onClick={this.setDot}>.</button>
+        <button id="equals" onClick={this.calculate}>=</button>
+    </div>
+    ) 
+  }
+}
+
+ReactDOM.render(<Calculator/>, document.getElementById('main'))

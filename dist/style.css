@@ -1,0 +1,60 @@
+html, body, main {
+  height: 100%;
+  width: 100%;
+}
+#calculator {
+  background: black;
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  grid-template-rows: repeat(6, auto);
+  border: 2px solid;
+  padding: 5px;
+  width: 300px;
+  height: 300px;
+  font-family: Share Tech Mono, monospace;
+}
+div {
+  background: black;
+  text-align: right;  
+  border: 0;
+  color: white;
+  padding: 0 5% 0 5%;
+}
+button {
+  background: #4d4d4d;
+  text-align: center;
+  border: black 1;
+  color: white;
+  outline: 1px solid black;
+  border: none;
+  cursor: default;
+}
+button:hover {
+  outline: 1px solid white;
+  cursor: default;
+}
+button:focus { 
+  outline: 1px solid black !important; 
+}
+#show {
+  grid-column: 1 / 5;
+}
+#show div {
+  height: 20px
+}
+#clear {
+  grid-column: 1 / 3;
+  background: #a14a45;
+}
+#zero {
+  grid-column: 1 / 3;
+}
+#equals {
+  grid-row: 5 / 7;
+  grid-column: 4;
+  background: #678c37;
+}
+
+#divide, #multiply, #subtract, #add {
+  background: #808080
+}
